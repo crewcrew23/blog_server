@@ -1,4 +1,4 @@
-import {registerValidation} from "../validations/auth.js";
+import {registerValidation} from "../validations/validations.js";
 import {validationResult} from "express-validator";
 import bcrypt from "bcrypt";
 import UserModel from "../models/User.js";
