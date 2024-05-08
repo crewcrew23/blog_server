@@ -1,4 +1,6 @@
 import PostModel from "../models/Post.js";
+import UserModel from "../models/User.js";
+import jwt from "jsonwebtoken";
 
 export const createPost = async (req, res) =>{
         try {
@@ -136,6 +138,93 @@ export const update = async (req, res) =>{
         console.log(err)
         return res.status(500).json({
             message:"Не удалось обновить статьи",
+            error:err
+        })
+    }
+}
+
+export const getLastTags = async (req, res) =>{
+    try {
+        const posts = await PostModel.find().limit(5).exec()
+
+        const tags = posts.flatMap(post => post.tags)
+
+
+        res.json(tags)
+
+    }catch (err){
+        console.log(err)
+        res.status(500).json({
+            message:"не удалось получить теги",
+            error:err
+        })
+    }
+}
+
+export const getPopularPosts = async (req, res) =>{
+    try{
+        const posts = await PostModel.find().sort({viewsCount: -1}).populate('user').exec()
+        res.status(200).json(posts)
+    }catch(err){
+        console.log(err)
+        res.status(500).json({
+            error:err
+        })
+    }
+}
+
+export const getSelectedPostsByTag = async(req, res) =>{
+    try{
+        const requestTag = req.params.tag
+        const posts = await PostModel.find({ tags: requestTag }).populate('user').exec()
+    
+
+        res.status(200).json({
+            posts:posts
+        })
+    }catch(err){
+        res.status(500).json({
+            error:err
+        })
+    }
+}
+
+export const addComment = async(req, res) =>{
+    try {
+        const token = (req.headers.authorization || '').replace(/Bearer\s?/,'')
+        const decodedToken = jwt.verify(token, 'secretKey123')
+        const userId = decodedToken._id
+        const user = await UserModel.findById(userId)
+        const {hashedPassword, ...userData} = user._doc
+
+
+
+        const postId = req.params.id
+        const post = await PostModel.findById(postId)
+        
+        post.comments.push({
+            comment:req.body.comment,
+            owner:userData
+        })
+        await post.save()
+        res.status(200).json(post)
+
+    } catch (err) {
+        res.status(500).json({
+            error:err
+        })
+    }
+}
+
+export const getlastComments = async(req, res)=>{
+    try {
+        const posts = await PostModel.find().limit(5).exec()
+        const comments = posts.flatMap(post => post.comments)
+
+        res.status(200).json(comments)
+        
+    } catch (err) {
+        res.status(500).json({
             error:err
         })
     }

@@ -2,9 +2,22 @@ import express from 'express'
 import mongoose from "mongoose";
 import {loginValidation, postCreateValidation, registerValidation} from "./validations/validations.js";
 import checkAuth from "./utils/checkAuth.js";
-import {login, profile, register} from "./controllers/userController.js";
-import {createPost, getAll, getOne, remove, update} from "./controllers/postController.js";
+import {login, profile, register, getUser} from "./controllers/userController.js";
+import {
+    createPost, 
+    getAll,
+    getLastTags,
+    getOne, 
+    remove,
+    update,
+    getPopularPosts, 
+    getSelectedPostsByTag, 
+    addComment,
+    getlastComments
+} from "./controllers/postController.js";
 import multer from 'multer'
+import handleValidationErrors from "./utils/handleValidationErrors.js";
+import cors from 'cors'
 
 const PORT = 5000 || 5500
 const app = express()
@@ -28,11 +41,14 @@ const upload = multer({ storage })
 
 
 app.use(express.json())
+app.use(cors())
+app.use('/upload', express.static('upload'))
 
 //login & reg
-app.post('/login',loginValidation, login)
-app.post('/registration', registerValidation, register)
+app.post('/login', loginValidation, handleValidationErrors, login)
+app.post('/registration', registerValidation, handleValidationErrors, register)
 app.get('/profile', checkAuth, profile)
+app.get('/getUserByArticleId/:id', getUser)
 
 app.post('/upload', checkAuth, upload.single('image'), (req, res) =>{
     try{
@@ -47,12 +63,18 @@ app.post('/upload', checkAuth, upload.single('image'), (req, res) =>{
 
 //posts
 //authorization route
-app.post('/posts',checkAuth, postCreateValidation, createPost)
+app.post('/posts',checkAuth, postCreateValidation, handleValidationErrors, createPost)
 app.delete('/posts/:id',checkAuth, remove)
+app.post('/addComment/:id',checkAuth, addComment)
+
 //not authorization route
 app.get('/posts', getAll)
 app.get('/posts/:id', getOne)
-app.patch('/posts/:id', update)
+app.patch('/posts/:id', handleValidationErrors, update)
+app.get('/tags', getLastTags)
+app.get('/selectedPostsByTags/:tag', getSelectedPostsByTag)
+app.get('/popular', getPopularPosts)
+app.get('/lastComments', getlastComments)
 
 app.listen(PORT, (err) =>{
     if (err){

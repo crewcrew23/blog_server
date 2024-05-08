@@ -1,16 +1,12 @@
-import {registerValidation} from "../validations/validations.js";
-import {validationResult} from "express-validator";
 import bcrypt from "bcrypt";
 import UserModel from "../models/User.js";
+import PostModel from '../models/Post.js'
 import jwt from "jsonwebtoken";
-import checkAuth from "../utils/checkAuth.js";
+
 
 export const register = async (req, res)=>{
     try {
-        const errors = validationResult(req)
-        if (!errors.isEmpty()){
-            return res.status(404).json(errors.array())
-        }
+    //    handleValidationErrors()
 
         const password = req.body.password
         const salt = await bcrypt.genSalt(10)
@@ -22,6 +18,7 @@ export const register = async (req, res)=>{
             name:req.body.name,
             secondName:req.body.secondName,
             userName:req.body.userName,
+            avatarURL:req.body.avatarURL
         })
 
         const user = await doc.save()
@@ -56,7 +53,7 @@ export const login = async (req, res)=>{
         const user = await UserModel.findOne({email: req.body.email})
 
         if (!user){
-            return res.status(404).json({
+            return res.status(401).json({
                 message:'Неверный логин или пароль',
             })
         }
@@ -81,7 +78,7 @@ export const login = async (req, res)=>{
 
         const {hashedPassword, ...userData} = user._doc
 
-        res.status(201).json({
+        res.status(200).json({
             ...userData,
             token
         })
@@ -112,5 +109,17 @@ export const profile = async (req, res) =>{
     }catch (err){
         console.log(err)
         res.json(err)
+    }
+}
+
+export const getUser = async (req, res) =>{
+    try{
+        const {user} = await PostModel.findById(req.params.id)
+        const returnedUser = await UserModel.findById(user)
+        const {hashedPassword, ...userData} = returnedUser._doc
+        res.status(200).json(userData)
+    }catch(err){
+        console.log(err)
+        res.status(500).json(err)
     }
 }
