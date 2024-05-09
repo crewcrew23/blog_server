@@ -76,7 +76,7 @@ app.get('/selectedPostsByTags/:tag', getSelectedPostsByTag)
 app.get('/popular', getPopularPosts)
 app.get('/lastComments', getlastComments)
 
-app.listen(PORT, (err) =>{
+app.listen(PORT,"0.0.0.0", (err) =>{
     if (err){
         console.log(err)
     }else {

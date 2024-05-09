@@ -147,10 +147,10 @@ export const getLastTags = async (req, res) =>{
     try {
         const posts = await PostModel.find().limit(5).exec()
 
-        const tags = posts.flatMap(post => post.tags)
+        const tags = posts.flatMap(post => post.tags).slice(-6).reverse()
+        const uniqueTags =[... new Set(tags)]
 
-
-        res.json(tags)
+        res.json(uniqueTags)
 
     }catch (err){
         console.log(err)
@@ -219,7 +219,7 @@ export const addComment = async(req, res) =>{
 export const getlastComments = async(req, res)=>{
     try {
         const posts = await PostModel.find().limit(5).exec()
-        const comments = posts.flatMap(post => post.comments)
+        const comments = posts.flatMap(post => post.comments).reverse().slice(-6)
 
         res.status(200).json(comments)
         
