@@ -19,7 +19,7 @@ import multer from 'multer'
 import handleValidationErrors from "./utils/handleValidationErrors.js";
 import cors from 'cors'
 
-const PORT = 5000 || 5500
+const port = 5000 || 5500
 const app = express()
 mongoose.connect("mongodb+srv://root:root@blogbase.kvwfw6h.mongodb.net/blog?retryWrites=true&w=majority&appName=BlogBase")
     .then ( () => console.log(`DB has been connected`))
@@ -76,10 +76,10 @@ app.get('/selectedPostsByTags/:tag', getSelectedPostsByTag)
 app.get('/popular', getPopularPosts)
 app.get('/lastComments', getlastComments)
 
-app.listen(PORT,"0.0.0.0", (err) =>{
+app.listen(port,"0.0.0.0", (err) =>{
     if (err){
         console.log(err)
     }else {
-        console.log(`Ok, server has been started on PORT: ${PORT}`)
+        console.log(`Ok, server has been started on PORT: ${port}`)
     }
 })
